@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>project 2 - graffiti removal app</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+	 crossorigin="anonymous">
+
+
+	<style>
+		.content {
+			display: none;
+			margin: 1em;
+		}
+        .template {
+            display: none;
+        }
+	</style>
+
+</head>
+
+<body>
+	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+		<a class="navbar-brand" href="#">Navbar</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+    </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" href="#search">Search<span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#list">List</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#map">Map</a>
+      </li>
+    </ul>
+  </div>
+  </nav>
+  <div class="content" id="search">
+    Search page
+      <br>
+      <input type = "text" onfocus="this.value=''" id="ward" placeholder="Enter a ward"><br>
+      <input type = "text" onfocus="this.value=''" id="status" placeholder="Enter status"><br>
+      <br>
+      <button id = "Search">
+          Search
+      </button>
+  </div>
+  
+ <div class="content" id="list">
+    List Page   
+ </div>
+    
+ <div class="card template" style="width: 18rem;">
+    <div class="card-body">
+       <h5 class="card-title">Card title</h5>
+       <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
+       <p class="card-text1"></p>
+       <p class="card-text2"></p>
+       <p class="card-text3"></p>
+       <p class="card-text4"></p>
+       <p class="card-text5"></p>
+       <p class="card-text6"></p>
+       <p class="card-text7"></p>
+    </div>
+</div>
+    
+  <div class="content" id="map">
+    Map Page
+  </div>
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+      
+
+    <script>
+      $(document).ready(function() {
+        $("#search").show()
+        function hideScreens() {
+          $(".content").hide();
+        }
+
+        $(".nav-link").on("click", function(){
+          hideScreens();
+          var target = $(this).attr("href");
+          $(target).show();
+        });
+          
+        $("#Search").on("click", function() {
+            //clear the list
+            $("#list").empty();
+            //retrieve data from endpoint
+            $.get("https://data.cityofchicago.org/resource/cdmx-wzbz.json?$limit=10&ward=" 
+                  + $("#ward").val() + "&status=" + $("#status").val(), function(data) {
+                console.log(data);
+                $.each(data, function(i,v) {
+                //clone card
+                var clone = $(".template").clone();
+                //update values
+                clone.find(".card-subtitle").text(v.street_address);
+                clone.find(".card-text2").text(v.service_request_number);
+                clone.find(".card-text3").text(v.where_is_the_graffiti_located_);
+                clone.find(".card-text4").text(v.what_type_of_surface_is_the_graffiti_on_);
+                clone.find(".card-text5").text(v.creation_date);
+                clone.find(".card-title").text(v.status);
+                clone.find(".card-text7").text(v.completion_date);
+                    
+                
+                
+                clone.removeClass("template");
+                //insert into DOM
+                $("#list").append(clone);
+            });
+            });
+        });
+
+      });
+    </script>
+
+
+  </body>
+</html>
