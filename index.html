@@ -4,12 +4,14 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>project 2 - graffiti removal app</title>
+	<title>graffiti removal app</title>
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
 	 crossorigin="anonymous">
 
-
 	<style>
+        .bg-light {
+            background-color: #9129b5!important;
+        }
 		.content {
 			display: none;
 			margin: 1em;
@@ -17,13 +19,19 @@
         .template {
             display: none;
         }
+      /* Set the size of the div element that contains the map */
+      #map {
+        height: 400px;  /* The height is 400 pixels */
+        width: 100%;  /* The width is the width of the web page */
+       }
+        
 	</style>
 
 </head>
 
 <body>
-	<nav class="navbar navbar-expand-lg navbar-light bg-light">
-		<a class="navbar-brand" href="#">Navbar</a>
+	<nav class="navbar navbar-expand-lg navbar-dark bg-light">
+		<a class="navbar-brand" href="#">Graffiti Removal Request App</a>
 		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
     </button>
@@ -37,6 +45,9 @@
       </li>
       <li class="nav-item">
         <a class="nav-link" href="#map">Map</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#about">About</a>
       </li>
     </ul>
   </div>
@@ -55,6 +66,13 @@
  <div class="content" id="list">
     List Page   
  </div>
+ 
+ <div class="content" id="about">
+    IT 202 - Project 2, 2019 <br>
+    Chicago Graffiti Removal Request App <br>
+    Mudit Kumar <br>
+    <a href="https://github.com/MuditK1785/IT202-Project-2">Github Link</a> 
+ </div>
     
  <div class="card template" style="width: 18rem;">
     <div class="card-body">
@@ -70,15 +88,14 @@
     </div>
 </div>
     
+  <!--The div element for the map -->
   <div class="content" id="map">
-    Map Page
+    <h3>Map of Graffiti Removal Requests</h3>
   </div>
-
-
+    
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
       
-
     <script>
       $(document).ready(function() {
         $("#search").show()
@@ -91,11 +108,15 @@
           var target = $(this).attr("href");
           $(target).show();
         });
-          
+               
         $("#Search").on("click", function() {
             //clear the list
             $("#list").empty();
-            //retrieve data from endpoint
+          
+            $("#list").show();
+            
+            initMap();
+           //retrieve data from endpoint
             $.get("https://data.cityofchicago.org/resource/cdmx-wzbz.json?$limit=10&ward=" 
                   + $("#ward").val() + "&status=" + $("#status").val(), function(data) {
                 console.log(data);
@@ -104,15 +125,13 @@
                 var clone = $(".template").clone();
                 //update values
                 clone.find(".card-subtitle").text(v.street_address);
-                clone.find(".card-text2").text(v.service_request_number);
-                clone.find(".card-text3").text(v.where_is_the_graffiti_located_);
-                clone.find(".card-text4").text(v.what_type_of_surface_is_the_graffiti_on_);
-                clone.find(".card-text5").text(v.creation_date);
+                clone.find(".card-text2").text("Service Request #: " + v.service_request_number);
+                clone.find(".card-text3").text("Where the Graffiti is Located: " + v.where_is_the_graffiti_located_);
+                clone.find(".card-text4").text("Type of Surface: "+ v.what_type_of_surface_is_the_graffiti_on_);
+                clone.find(".card-text5").text("Creation Date: " + v.creation_date);
                 clone.find(".card-title").text(v.status);
-                clone.find(".card-text7").text(v.completion_date);
-                    
-                
-                
+                clone.find(".card-text7").text("Completion Date: " + v.completion_date);
+                //remove duplicates                 
                 clone.removeClass("template");
                 //insert into DOM
                 $("#list").append(clone);
@@ -121,8 +140,64 @@
         });
 
       });
+      
+        //Initialize and add the map
+            function initMap() {
+              // The location of chicago
+              var chicago = {lat: 41.8781, lng: -87.6298};
+              // The map, centered at chicago
+              var map = new google.maps.Map(
+                  document.getElementById('map'), {zoom: 11, center: chicago});
+      
+              $.get("https://data.cityofchicago.org/resource/cdmx-wzbz.json?$limit=10&ward=" 
+                  + $("#ward").val() + "&status=" + $("#status").val(),
+
+                  function(response) {
+                    console.log("in data callback");
+                    var data = response;
+                    createMarkers(map, data );
+               });
+
+            }
+        
+          function createMarkers (map, data) {
+            //console.log(data);
+            $.each(data, function(i,v) {
+
+              var location = {lat: parseFloat(v.latitude), lng: parseFloat(v.longitude)}
+              
+              if($("#status").val() == "Completed")
+                  var marker = new google.maps.Marker({position: location, map: map, icon:                                                     'http://maps.google.com/mapfiles/ms/icons/green-dot.png'});
+              else
+                  var marker = new google.maps.Marker({position: location, map: map})
+              
+              var contentString = "<h3>" + v.status + "</h3>" +
+                  "<h6>" + v.street_address + "</h6>" + "</br>" +
+                  "<p>" + "Service Request #: " + v.service_request_number + "</p>" +
+                  "<p>" + "Where Graffiti is located: " + v.where_is_the_graffiti_located_ + "</p>" +
+                  "<p>" + "Type of Surface: " + v.what_type_of_surface_is_the_graffiti_on_ + "</p>" +
+                  "<p>" + "Creation Date: " + v.creation_date + "</p>" +
+                  "<p>" + "Completion Date: " + v.completion_date + "</p>"
+              
+              var infowindow = new google.maps.InfoWindow({
+                content: contentString
+              });
+
+              marker.addListener('click', function() {
+                infowindow.open(map, marker);
+              });
+            });
+
+          }
+        
     </script>
-
-
+    <!--Load the API from the specified URL
+    * The async attribute allows the browser to render the page while the API loads
+    * The key parameter will contain your own API key (which is not needed for this tutorial)
+    * The callback parameter executes the initMap() function
+    -->
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDa4dMSOASs_iLQnhrPoQ8EZgj2Im_pZ7o&callback=initMap">
+    </script>
   </body>
 </html>
