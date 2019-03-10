@@ -4,6 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
+    <link rel='manifest' href='./manifest.json'>
 	<title>graffiti removal app</title>
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
 	 crossorigin="anonymous">
@@ -167,7 +168,7 @@
               var location = {lat: parseFloat(v.latitude), lng: parseFloat(v.longitude)}
               
               if($("#status").val() == "Completed")
-                  var marker = new google.maps.Marker({position: location, map: map, icon:                                                     'http://maps.google.com/mapfiles/ms/icons/green-dot.png'});
+                  var marker = new google.maps.Marker({position: location, map: map, icon:                                                     'https://maps.google.com/mapfiles/ms/icons/green-dot.png'});
               else
                   var marker = new google.maps.Marker({position: location, map: map})
               
@@ -190,6 +191,12 @@
 
           }
         
+        // register the service worker for offline use
+        if('serviceWorker' in navigator) {
+          navigator.serviceWorker
+                   .register('./sw.js')
+                   .then(function() { console.log("Service Worker Registered"); });
+        }
     </script>
     <!--Load the API from the specified URL
     * The async attribute allows the browser to render the page while the API loads
